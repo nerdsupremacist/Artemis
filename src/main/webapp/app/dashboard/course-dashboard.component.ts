@@ -207,7 +207,7 @@ export class CourseDashboardComponent implements OnInit, OnDestroy {
         if (this.exportReady && this.students.length > 0) {
             const rows: string[] = [];
             // first row with headers
-            let firstRowString = 'data:text/csv;charset=utf-8,Name,Username,Email,Registration Number';
+            let firstRowString = 'data:text/csv;charset=utf-8,Name,Username,Email,Registration Number,';
             for (const exerciseType of this.exerciseTypes) {
                 const exerciseTypeName = capitalizeFirstLetter(exerciseType);
 
@@ -248,7 +248,7 @@ export class CourseDashboardComponent implements OnInit, OnDestroy {
             }
 
             // max values
-            let rowStringMax = 'Max' + ',,,';
+            let rowStringMax = 'Max' + ',,,,';
             for (const exerciseType of this.exerciseTypes) {
                 // only add it if there are actually exercises in this type
                 if (this.exerciseTitlesPerType.get(exerciseType) && this.exerciseTitlesPerType.get(exerciseType) !== '') {
@@ -261,7 +261,7 @@ export class CourseDashboardComponent implements OnInit, OnDestroy {
             rows.push(rowStringMax + maxOverallPoints + ',' + maxOverallScore + ',');
 
             // average values
-            let rowStringAverage = 'Average' + ',,,';
+            let rowStringAverage = 'Average' + ',,,,';
             for (const exerciseType of this.exerciseTypes) {
                 // only add it if there are actually exercises in this type
                 if (this.exerciseTitlesPerType.get(exerciseType) && this.exerciseTitlesPerType.get(exerciseType) !== '') {
@@ -276,7 +276,7 @@ export class CourseDashboardComponent implements OnInit, OnDestroy {
             rows.push(rowStringAverage + averageOverallPoints + ',' + averageOverallScore + ',');
 
             // participation
-            let rowStringParticipation = 'Number of participations' + ',,,';
+            let rowStringParticipation = 'Number of participations' + ',,,,';
             for (const exerciseType of this.exerciseTypes) {
                 // only add it if there are actually exercises in this type
                 if (this.exerciseTitlesPerType.get(exerciseType) && this.exerciseTitlesPerType.get(exerciseType) !== '') {
@@ -286,7 +286,7 @@ export class CourseDashboardComponent implements OnInit, OnDestroy {
             rows.push(rowStringParticipation + ',,');
 
             // successful
-            let rowStringSuccuessful = 'Number of successful participations' + ',,,';
+            let rowStringSuccuessful = 'Number of successful participations' + ',,,,';
             for (const exerciseType of this.exerciseTypes) {
                 // only add it if there are actually exercises in this type
                 if (this.exerciseTitlesPerType.get(exerciseType) && this.exerciseTitlesPerType.get(exerciseType) !== '') {
