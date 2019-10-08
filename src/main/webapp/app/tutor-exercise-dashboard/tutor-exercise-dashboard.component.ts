@@ -336,13 +336,13 @@ export class TutorExerciseDashboardComponent implements OnInit {
 
         switch (this.exercise.type) {
             case ExerciseType.TEXT:
-                route = `/text/${this.exercise.id}/assessment/${submission}`;
+                route = `/course-admin/${this.courseId}/text-exercise/${this.exercise.id}/submission/${submission}/assessment`;
                 break;
             case ExerciseType.MODELING:
-                route = `/modeling-exercise/${this.exercise.id}/submissions/${submission}/assessment`;
+                route = `/course-admin/${this.courseId}/modeling-exercise/${this.exercise.id}/submission/${submission}/assessment`;
                 break;
             case ExerciseType.FILE_UPLOAD:
-                route = `/file-upload-exercise/${this.exercise.id}/submission/${submission}/assessment`;
+                route = `/course-admin/${this.courseId}/file-upload-exercise/${this.exercise.id}/submission/${submission}/assessment`;
                 break;
         }
         this.router.navigate([route]);

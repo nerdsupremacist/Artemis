@@ -217,11 +217,11 @@ export class CourseExerciseDetailsComponent implements OnInit, OnDestroy {
 
     get exerciseRouterLink(): string | null {
         if (this.exercise && this.exercise.type === ExerciseType.MODELING) {
-            return `/course/${this.courseId}/exercise/${this.exercise!.id}/assessment`;
+            return `/course-admin/${this.courseId}/modeling-exercise/${this.exercise!.id}/assessment`;
         } else if (this.exercise && this.exercise.type === ExerciseType.TEXT) {
-            return `/text/${this.exercise.id}/assessment`;
+            return `/course-admin/${this.courseId}/text-exericse/${this.exercise.id}/assessment`;
         } else if (this.exercise && this.exercise.type === ExerciseType.FILE_UPLOAD) {
-            return `/file-upload-exercise/${this.exercise.id}/assessment`;
+            return `/course-admin/${this.courseId}/file-upload-exericse/${this.exercise.id}/assessment`;
         } else {
             return null;
         }

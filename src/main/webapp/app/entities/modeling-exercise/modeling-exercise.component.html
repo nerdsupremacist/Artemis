@@ -36,7 +36,7 @@
             <tbody>
                 <tr *ngFor="let modelingExercise of modelingExercises | sortBy: predicate:reverse; trackBy: trackId">
                     <td>
-                        <a [routerLink]="['/course', modelingExercise.course.id, 'modeling-exercise', modelingExercise.id]">{{ modelingExercise.id }}</a>
+                        <a [routerLink]="['/course-admin', modelingExercise.course.id, 'modeling-exercise', modelingExercise.id]">{{ modelingExercise.id }}</a>
                     </td>
                     <td>{{ modelingExercise.title }}</td>
                     <td>{{ modelingExercise.releaseDate | date: 'medium' }}</td>
@@ -49,7 +49,7 @@
                             <button
                                 type="submit"
                                 *ngIf="modelingExercise.isAtLeastTutor"
-                                [routerLink]="['/course', modelingExercise.course.id, 'exercise', modelingExercise.id, 'dashboard']"
+                                [routerLink]="['/course-admin', modelingExercise.course.id, 'exercise', modelingExercise.id, 'dashboard']"
                                 class="btn btn-info btn-sm mr-1"
                             >
                                 <fa-icon icon="eye"></fa-icon>

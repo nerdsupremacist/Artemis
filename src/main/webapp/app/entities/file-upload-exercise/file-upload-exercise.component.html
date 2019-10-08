@@ -6,7 +6,7 @@
         <button
             *ngIf="course && course.isAtLeastInstructor"
             class="btn btn-primary float-right jh-create-entity create-file-upload-exercise"
-            [routerLink]="['/course', course.id, 'file-upload-exercise', 'new']"
+            [routerLink]="['/course-admin', course.id, 'file-upload-exercise', 'new']"
         >
             <fa-icon icon="plus"></fa-icon>
             <span jhiTranslate="artemisApp.fileUploadExercise.home.createLabel">
@@ -37,7 +37,7 @@
             <tbody>
                 <tr *ngFor="let fileUploadExercise of fileUploadExercises | sortBy: predicate:reverse; trackBy: trackId">
                     <td>
-                        <a [routerLink]="['/course', fileUploadExercise.course.id, 'file-upload-exercise', fileUploadExercise.id]">{{ fileUploadExercise.id }}</a>
+                        <a [routerLink]="['/course-admin', fileUploadExercise.course.id, 'file-upload-exercise', fileUploadExercise.id]">{{ fileUploadExercise.id }}</a>
                     </td>
                     <td>{{ fileUploadExercise.title }}</td>
                     <td [innerHTML]="fileUploadExercise.problemStatement | htmlForMarkdown"></td>
@@ -51,7 +51,7 @@
                             <button
                                 type="submit"
                                 *ngIf="fileUploadExercise.isAtLeastTutor"
-                                [routerLink]="['/course', fileUploadExercise.course.id, 'exercise', fileUploadExercise.id, 'dashboard']"
+                                [routerLink]="['/course-admin', fileUploadExercise.course.id, 'exercise', fileUploadExercise.id, 'dashboard']"
                                 class="btn btn-info btn-sm mr-1"
                             >
                                 <fa-icon icon="eye"></fa-icon>
