@@ -52,7 +52,7 @@ class JavaClassDiffSerializer {
         if (javaClassDiff.superInterfacesDiff.size() > 0) {
             JsonArray superInterfaces = new JsonArray();
 
-            for (JavaClass superInterface : javaClassDiff.superInterfacesDiff) {
+            for (Class superInterface : javaClassDiff.superInterfacesDiff) {
                 superInterfaces.add(superInterface.getSimpleName());
             }
             classJSON.add("interfaces", superInterfaces);
@@ -60,7 +60,7 @@ class JavaClassDiffSerializer {
         if (javaClassDiff.annotationsDiff.size() > 0) {
             JsonArray annotations = new JsonArray();
 
-            for (JavaAnnotation annotation : javaClassDiff.annotationsDiff) {
+            for (Annotation annotation : javaClassDiff.annotationsDiff) {
                 annotations.add(annotation.getType().getSimpleName());
             }
             classJSON.add("annotations", annotations);
@@ -77,7 +77,7 @@ class JavaClassDiffSerializer {
     JsonArray serializeAttributes() {
         JsonArray attributesJSON = new JsonArray();
 
-        for (JavaField attribute : javaClassDiff.attributesDiff) {
+        for (Field attribute : javaClassDiff.attributesDiff) {
             JsonObject attributeJSON = SerializerUtil.createJsonObject(attribute.getName(), new HashSet<>(attribute.getModifiers()), attribute, attribute.getAnnotations());
             attributeJSON.addProperty("type", attribute.getType().getValue());
             attributesJSON.add(attributeJSON);
@@ -94,7 +94,7 @@ class JavaClassDiffSerializer {
     JsonArray serializeEnums() {
         JsonArray enumsJSON = new JsonArray();
 
-        for (JavaField javaEnum : javaClassDiff.enumsDiff) {
+        for (Field javaEnum : javaClassDiff.enumsDiff) {
             enumsJSON.add(javaEnum.getName());
         }
 
@@ -110,7 +110,7 @@ class JavaClassDiffSerializer {
     JsonArray serializeConstructors() {
         JsonArray constructorsJSON = new JsonArray();
 
-        for (JavaConstructor constructor : javaClassDiff.constructorsDiff) {
+        for (Executable constructor : javaClassDiff.constructorsDiff) {
             JsonObject constructorJSON = new JsonObject();
 
             if (!constructor.getModifiers().isEmpty()) {
@@ -136,7 +136,7 @@ class JavaClassDiffSerializer {
     JsonArray serializeMethods() {
         JsonArray methodsJSON = new JsonArray();
 
-        for (JavaMethod method : javaClassDiff.methodsDiff) {
+        for (Method method : javaClassDiff.methodsDiff) {
             JsonObject methodJSON = SerializerUtil.createJsonObject(method.getName(), new HashSet<>(method.getModifiers()), method, method.getAnnotations());
             if (!method.getParameters().isEmpty()) {
                 methodJSON.add("parameters", SerializerUtil.serializeParameters(method.getParameters()));

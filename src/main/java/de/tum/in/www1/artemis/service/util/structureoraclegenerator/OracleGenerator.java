@@ -19,6 +19,8 @@ import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaSource;
 import de.tum.in.www1.artemis.web.rest.errors.InternalServerErrorException;
 
+import javax.xml.transform.Source;
+
 /**
  * This generator is used to parse the structure of a programming exercise to be then assessed from Artemis.
  * It is used to automatically generate the structure oracle with the solution of the exercise as the system model and the template as the test model.
@@ -72,14 +74,14 @@ public class OracleGenerator {
         JsonArray structureOracleJSON = new JsonArray();
 
         // Generate the pairs of the types found in the solution project with the corresponding one from the template project.
-        Map<JavaClass, JavaClass> solutionToTemplateMapping = generateSolutionToTemplateMapping(solutionProjectPath, templateProjectPath);
+        Map<Class, Class> solutionToTemplateMapping = generateSolutionToTemplateMapping(solutionProjectPath, templateProjectPath);
 
         // Loop over each pair of types and create the diff data structures and the JSON representation afterwards for each.
         // If the types, classes or enums are equal, then ignore and continue with the next pair
-        for (Map.Entry<JavaClass, JavaClass> entry : solutionToTemplateMapping.entrySet()) {
+        for (Map.Entry<Class, Class> entry : solutionToTemplateMapping.entrySet()) {
             JsonObject diffJSON = new JsonObject();
-            JavaClass solutionType = entry.getKey();
-            JavaClass templateType = entry.getValue();
+            Class solutionType = entry.getKey();
+            Class templateType = entry.getValue();
 
             // Initialize the types diff containing various properties as well as methods.
             JavaClassDiff javaClassDiff = new JavaClassDiff(solutionType, templateType);
@@ -144,21 +146,21 @@ public class OracleGenerator {
      * @param templateProjectPath The path to the template project.
      * @return A hash map containing the type pairs of the solution types and their respective counterparts in the template.
      */
-    private static Map<JavaClass, JavaClass> generateSolutionToTemplateMapping(Path solutionProjectPath, Path templateProjectPath) {
+    private static Map<Class, Class> generateSolutionToTemplateMapping(Path solutionProjectPath, Path templateProjectPath) {
         List<File> templateFiles = retrieveJavaSourceFiles(templateProjectPath);
         List<File> solutionFiles = retrieveJavaSourceFiles(solutionProjectPath);
         log.debug("Template Java Files " + templateFiles);
         log.debug("Solution Java Files " + solutionFiles);
-        List<JavaClass> templateClasses = getClassesFromFiles(templateFiles);
-        List<JavaClass> solutionClasses = getClassesFromFiles(solutionFiles);
+        List<Class> templateClasses = getClassesFromFiles(templateFiles);
+        List<Class> solutionClasses = getClassesFromFiles(solutionFiles);
 
-        Map<JavaClass, JavaClass> solutionToTemplateMapping = new HashMap<>();
+        Map<Class, Class> solutionToTemplateMapping = new HashMap<>();
 
-        for (JavaClass solutionClass : solutionClasses) {
+        for (Class solutionClass : solutionClasses) {
             // Put an empty template class as a default placeholder.
             solutionToTemplateMapping.put(solutionClass, null);
 
-            for (JavaClass templateClass : templateClasses) {
+            for (Class templateClass : templateClasses) {
                 if (solutionClass.getSimpleName().equals(templateClass.getSimpleName()) && templateClass.getPackageName().equals(solutionClass.getPackageName())) {
                     // If a template class with the same name and package gets found, then replace the empty template with the real one.
                     solutionToTemplateMapping.put(solutionClass, templateClass);
@@ -170,20 +172,13 @@ public class OracleGenerator {
         return solutionToTemplateMapping;
     }
 
-    private static List<JavaClass> getClassesFromFiles(List<File> javaSourceFiles) {
-
-        List<JavaClass> foundJavaClasses = new ArrayList<>();
-        for (File javaSourceFile : javaSourceFiles) {
-            try {
-                JavaProjectBuilder builder = new JavaProjectBuilder();
-                JavaSource src = builder.addSource(javaSourceFile);
-                foundJavaClasses.addAll(src.getClasses());
-            }
-            catch (IOException e) {
-                log.error("Could not add java source to builder", e);
-            }
+    private static List<Class> getClassesFromFiles(List<File> sourceFiles) {
+        try {
+            return SourceCodeParser.Companion.parse(sourceFiles);
+        } catch (Exception e) {
+            log.error("Could not add java source to builder", e);
+            return new ArrayList();
         }
-        return foundJavaClasses;
     }
 
     private static List<File> retrieveJavaSourceFiles(Path path) {
@@ -195,9 +190,7 @@ public class OracleGenerator {
     }
 
     private static void walkProjectFileStructure(File file, List<File> foundFiles) {
-        String fileName = file.getName();
-
-        if (fileName.contains(".java")) {
+        if (SourceCodeParser.Companion.supports(file)) {
             foundFiles.add(file);
         }
 

@@ -2,9 +2,8 @@ package de.tum.in.www1.artemis.service.util.structureoraclegenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.thoughtworks.qdox.model.*;
 
 /**
  * This class represents the so-called diff of the solution type and the template type. The solution type is a fully defined type found in the solution of a programming exercise.
@@ -14,9 +13,9 @@ import com.thoughtworks.qdox.model.*;
  */
 public class JavaClassDiff {
 
-    private JavaClass solutionClass;
+    private Class solutionClass;
 
-    private JavaClass templateClass;
+    private Class templateClass;
 
     private String name;
 
@@ -30,19 +29,19 @@ public class JavaClassDiff {
 
     String superClassNameDiff;
 
-    List<JavaClass> superInterfacesDiff;
+    List<Class> superInterfacesDiff;
 
-    List<JavaAnnotation> annotationsDiff;
+    List<Annotation> annotationsDiff;
 
-    List<JavaField> attributesDiff;
+    List<Field> attributesDiff;
 
-    List<JavaField> enumsDiff;
+    List<Field> enumsDiff;
 
-    List<JavaConstructor> constructorsDiff;
+    List<Executable> constructorsDiff;
 
-    List<JavaMethod> methodsDiff;
+    List<Method> methodsDiff;
 
-    JavaClassDiff(JavaClass solutionClass, JavaClass templateClass) {
+    JavaClassDiff(Class solutionClass, Class templateClass) {
         this.solutionClass = solutionClass;
         this.templateClass = templateClass;
         this.name = generateName();
@@ -120,11 +119,11 @@ public class JavaClassDiff {
      * @return The simple name of the super class the solution type extends and the template type does not. If both types are subclasses of the same class, return an empty string.
      */
     private String generateSuperClassName() {
-        JavaClass solutionSuperClass = solutionClass.getSuperJavaClass();
+        Class solutionSuperClass = solutionClass.getSuperClass();
         if (solutionSuperClass != null && solutionSuperClass.getCanonicalName().equals("java.lang.Object")) {
             solutionSuperClass = null;
         }
-        JavaClass templateSuperClass = templateClass == null ? null : templateClass.getSuperJavaClass();
+        Class templateSuperClass = templateClass == null ? null : templateClass.getSuperClass();
         if (templateSuperClass != null && templateSuperClass.getCanonicalName().equals("java.lang.Object")) {
             templateSuperClass = null;
         }
@@ -154,12 +153,12 @@ public class JavaClassDiff {
      * 
      * @return A set of interfaces the solution type implements, but the template type does not.
      */
-    private List<JavaClass> generateSuperInterfaces() {
-        List<JavaClass> superInterfacesDiff = new ArrayList<>(solutionClass.getInterfaces());
+    private List<Class> generateSuperInterfaces() {
+        List<Class> superInterfacesDiff = solutionClass.getInterfaces();
         if (templateClass != null) {
             // Check all the super interfaces in the template type if they match to the ones in the solution type
             // and remove them from the diff, if that's the case.
-            for (JavaClass templateTypeSuperInterface : templateClass.getInterfaces()) {
+            for (Class templateTypeSuperInterface : templateClass.getInterfaces()) {
                 // The interfaces are uniquely identified by their names.
                 superInterfacesDiff.removeIf(solutionTypeSuperInterface -> solutionTypeSuperInterface.getSimpleName().equals(templateTypeSuperInterface.getSimpleName()));
             }
@@ -173,10 +172,10 @@ public class JavaClassDiff {
      *
      * @return A set of annotations defined in the solution type but not in the template type.
      */
-    private List<JavaAnnotation> generateAnnotationsDiff() {
-        List<JavaAnnotation> annotationsDiff = new ArrayList<>(solutionClass.getAnnotations());
+    private List<Annotation> generateAnnotationsDiff() {
+        List<Annotation> annotationsDiff = new ArrayList<>(solutionClass.getAnnotations());
         if (templateClass != null) {
-            for (JavaAnnotation templateAnnotation : templateClass.getAnnotations()) {
+            for (Annotation templateAnnotation : templateClass.getAnnotations()) {
                 // The annotations are uniquely identified by their names.
                 annotationsDiff.removeIf(solutionAnnotation -> solutionAnnotation.getType().getSimpleName().equals(templateAnnotation.getType().getSimpleName()));
             }
@@ -189,10 +188,10 @@ public class JavaClassDiff {
      * 
      * @return A set of attributes defined in the solution type but not in the template type.
      */
-    private List<JavaField> generateAttributesDiff() {
-        List<JavaField> attributesDiff = new ArrayList<>(solutionClass.getFields());
+    private List<Field> generateAttributesDiff() {
+        List<Field> attributesDiff = new ArrayList<>(solutionClass.getFields());
         // do not consider enum values as attributes
-        attributesDiff.removeIf(JavaField::isEnumConstant);
+        attributesDiff.removeIf(Field::isEnumConstant);
         // If the template is non-existent, then the attributes diff consists of all the attributes of the solution type.
         removeTemplateElements(attributesDiff);
         return attributesDiff;
@@ -203,22 +202,22 @@ public class JavaClassDiff {
      * 
      * @return A set of enums defined in the solution type but not in the template type.
      */
-    private List<JavaField> generateEnumsDiff() {
+    private List<Field> generateEnumsDiff() {
         // Create an empty set of enums for the enums diff
-        List<JavaField> enumsDiff = new ArrayList<>(solutionClass.getFields());
+        List<Field> enumsDiff = new ArrayList<>(solutionClass.getFields());
         // do not consider non enum fields
         enumsDiff.removeIf(field -> !field.isEnumConstant());
         removeTemplateElements(enumsDiff);
         return enumsDiff;
     }
 
-    private void removeTemplateElements(List<JavaField> fieldDiff) {
+    private void removeTemplateElements(List<Field> fieldDiff) {
         // If the template is non-existent, then the enum/attributes diff consists of all the attributes of the solution type.
         if (templateClass != null) {
 
             // Check all the enums/attributes in the template type if they match to the ones in the solution type
             // and remove them from the diff, if that's the case.
-            for (JavaField templateField : templateClass.getFields()) {
+            for (Field templateField : templateClass.getFields()) {
 
                 // Attributes and enums are uniquely identified by their name, type, modifiers and annotations.
                 fieldDiff.removeIf(solutionField -> solutionField.getName().equals(templateField.getName()) && typesAreEqual(solutionField.getType(), templateField.getType())
@@ -233,16 +232,16 @@ public class JavaClassDiff {
      * 
      * @return A set of constructors defined in the solution type but not in the template type.
      */
-    private List<JavaConstructor> generateConstructorsDiff() {
+    private List<Executable> generateConstructorsDiff() {
 
-        List<JavaConstructor> constructorsDiff = new ArrayList<>(solutionClass.getConstructors());
+        List<Executable> constructorsDiff = new ArrayList<>(solutionClass.getConstructors());
 
         // If the template is non-existent, then the constructors diff consists of all the constructors of the solution type.
         if (templateClass != null) {
 
             // Check all the constructors in the template type if they match to the ones in the solution type
             // and remove them from the diff, if that's the case.
-            for (JavaConstructor templateConstructor : templateClass.getConstructors()) {
+            for (Executable templateConstructor : templateClass.getConstructors()) {
 
                 // The constructors are uniquely identified by their parameter types, modifiers and annotations
                 constructorsDiff.removeIf(solutionConstructor -> parameterTypesAreEqual(solutionConstructor, templateConstructor)
@@ -258,15 +257,15 @@ public class JavaClassDiff {
      * 
      * @return A set of methods defined in the solution type but not in the template type.
      */
-    private List<JavaMethod> generateMethodsDiff() {
-        List<JavaMethod> methodsDiff = new ArrayList<>(solutionClass.getMethods());
+    private List<Method> generateMethodsDiff() {
+        List<Method> methodsDiff = new ArrayList(solutionClass.getMethods());
         methodsDiff.removeIf(method -> method.getName().equals("main"));
 
         if (templateClass != null) {
 
             // Check all the methods in the template type if they match to the ones in the solution type
             // and remove them from the diff, if that's the case.
-            for (JavaMethod templateMethod : templateClass.getMethods()) {
+            for (Method templateMethod : templateClass.getMethods()) {
 
                 // The methods are uniquely identified by their names, parameter types, return type, modifiers and annotations.
                 methodsDiff.removeIf(
@@ -280,7 +279,7 @@ public class JavaClassDiff {
         return methodsDiff;
     }
 
-    private boolean signaturesAreEqual(JavaMethod solutionMethod, JavaMethod templateMethod) {
+    private boolean signaturesAreEqual(Method solutionMethod, Method templateMethod) {
         return methodNamesAreEqual(solutionMethod, templateMethod) && parameterTypesAreEqual(solutionMethod, templateMethod);
     }
 
@@ -291,15 +290,15 @@ public class JavaClassDiff {
      * @param templateMethod The method defined in the template type.
      * @return True, if the name of the methods is the same, false otherwise.
      */
-    private boolean methodNamesAreEqual(JavaMethod solutionMethod, JavaMethod templateMethod) {
+    private boolean methodNamesAreEqual(Method solutionMethod, Method templateMethod) {
         return solutionMethod.getName().equals(templateMethod.getName());
     }
 
-    private boolean typesAreEqual(JavaClass solutionClass, JavaClass templateClass) {
+    private boolean typesAreEqual(Class solutionClass, Class templateClass) {
         return solutionClass.getName().equals(templateClass.getName());
     }
 
-    private boolean annotationsAreEqual(List<JavaAnnotation> solutionAnnotations, List<JavaAnnotation> templateAnnotations) {
+    private boolean annotationsAreEqual(List<Annotation> solutionAnnotations, List<Annotation> templateAnnotations) {
         if (solutionAnnotations == null && templateAnnotations == null) {
             return true;
         }
@@ -321,7 +320,7 @@ public class JavaClassDiff {
                 .containsAll(templateAnnotations.stream().map(annotation -> annotation.getType().getSimpleName()).collect(Collectors.toList()));
     }
 
-    private boolean modifiersAreEqual(List<String> solutionModifiers, List<String> templateModifiers) {
+    private boolean modifiersAreEqual(Set<String> solutionModifiers, Set<String> templateModifiers) {
         if (solutionModifiers == null && templateModifiers == null) {
             return true;
         }
@@ -349,11 +348,11 @@ public class JavaClassDiff {
      * @param templateExecutable: The executable present in the template type.
      * @return True, if the parameter types are the same, false otherwise.
      */
-    private static boolean parameterTypesAreEqual(JavaExecutable solutionExecutable, JavaExecutable templateExecutable) {
+    private static boolean parameterTypesAreEqual(Executable solutionExecutable, Executable templateExecutable) {
         // Create lists containing only the parameter type names for both the executable.
         // This is done to work with them more easily, since types are uniquely identified only by their names.
-        List<String> solutionParams = solutionExecutable.getParameters().stream().map(JavaParameter::getName).collect(Collectors.toList());
-        List<String> templateParams = templateExecutable.getParameters().stream().map(JavaParameter::getName).collect(Collectors.toList());
+        List<String> solutionParams = solutionExecutable.getParameters().stream().map(Parameter::getName).collect(Collectors.toList());
+        List<String> templateParams = templateExecutable.getParameters().stream().map(Parameter::getName).collect(Collectors.toList());
 
         // If both executables have no parameters, then their parameters are the same.
         if (solutionParams.isEmpty() && templateParams.isEmpty()) {
